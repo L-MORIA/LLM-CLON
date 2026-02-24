@@ -1,104 +1,138 @@
+"""
+Global configuration for Numerology RAG System
+Основная конфигурация для системы RAG по нумерологии
+"""
 import os
 from pathlib import Path
-from typing import Literal
+from typing import Dict, Any
 
-# Базовые пути
-BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = BASE_DIR / "data"
+# ============================================================================
+# ПУТИ (PATHS)
+# ============================================================================
+PROJECT_ROOT = Path(__file__).parent.parent
+DATA_DIR = PROJECT_ROOT / "data"
 PDF_DIR = DATA_DIR / "pdfs"
 PROCESSED_DIR = DATA_DIR / "processed"
 MODELS_DIR = DATA_DIR / "models"
-LOGS_DIR = BASE_DIR / "logs"
+LOGS_DIR = PROJECT_ROOT / "logs"
 
 # Создание папок если их нет
 for directory in [DATA_DIR, PDF_DIR, PROCESSED_DIR, MODELS_DIR, LOGS_DIR]:
     directory.mkdir(parents=True, exist_ok=True)
 
-# ============ ОСНОВНЫЕ ПАРАМЕТРЫ ============
-PROJECT_NAME = "Numerology RAG System"
-PROJECT_VERSION = "1.0.0"
+# ============================================================================
+# ОСНОВНЫЕ ПАРАМЕТРЫ (CORE SETTINGS)
+# ============================================================================
+PROJECT_NAME = "numerology-kz-rag-system"
+VERSION = "1.0.0"
 LANGUAGE = "ru"  # Русский язык
 
-# ============ PDF ОБРАБОТКА ============
-PDF_CONFIG = {
-    "ocr_lang": "rus+eng",  # Tesseract языки
-    "ocr_timeout": 60,  # Таймаут OCR в секундах
-    "min_text_length": 10,  # Минимальная длина текста для считки
-    "dpi_for_ocr": 300,  # DPI для OCR сканов
-    "binary_threshold": 200,  # Порог бинаризации для улучшения OCR
-}
+# ============================================================================
+# БАЗА ДАННЫХ (DATABASE)
+# ============================================================================
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = int(os.getenv("DB_PORT", "5432"))
+DB_NAME = os.getenv("DB_NAME", "numerology_rag")
+DB_USER = os.getenv("DB_USER", "postgres")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "postgres")
 
-# ============ EMBEDDINGS ============
-EMBEDDINGS_CONFIG = {
-    "model_name": "intfloat/multilingual-e5-large",  # multilingual-e5
-    "model_dimension": 1024,  # Размер вектора E5-large
-    "batch_size_cpu": 4,  # Батч для CPU
-    "batch_size_gpu": 32,  # Батч для GPU
-    "cache_embeddings": True,
-}
+DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-# ============ CHUNKING ============
-CHUNKING_CONFIG = {
-    "chunk_size": 512,  # Размер чанка в токенах
-    "chunk_overlap": 50,  # Перекрытие между чанками
-    "min_chunk_size": 100,  # Минимальный размер чанка
-}
+# ============================================================================
+# МОДЕЛИ (MODELS)
+# ============================================================================
+# Embeddings модель
+EMBEDDINGS_MODEL = "intfloat/multilingual-e5-base"  # 768D, многоязычная
+EMBEDDINGS_DEVICE = "auto"  # auto, cpu, cuda
+EMBEDDINGS_BATCH_SIZE = 32
 
-# ============ RETRIEVAL ============
-RETRIEVAL_CONFIG = {
-    "top_k": 5,  # Количество результатов
-    "rerank_top_k": 10,  # Переранжирование топ N
-    "bm25_weight": 0.4,  # Вес BM25 в гибридном поиске
-    "faiss_weight": 0.6,  # Вес FAISS в гибридном поиске
-    "cosine_threshold": 0.3,  # Минимальный порог косинуса для результата
-}
+# LLM модель
+LLM_MODEL = "qwen2:8b"  # Qwen2 8B
+LLM_API_BASE = os.getenv("LLM_API_BASE", "http://localhost:11434")
+LLM_MAX_TOKENS = 512  # Максимум токенов в ответе
+LLM_TEMPERATURE = 0.7
+LLM_TIMEOUT = 9  # Таймаут 9 сек (меньше чем лимит 10 сек)
 
-# ============ LLM ============
-LLM_CONFIG = {
-    "model_name": "qwen2:8b",  # Модель Qwen2 8B
-    "temperature": 0.7,
-    "top_p": 0.9,
-    "max_tokens": 512,  # Максимум токенов в ответе
-    "timeout": 10,  # Таймаут ответа в секундах
-    "context_size": 2048,  # Размер контекста
-}
+# ============================================================================
+# RETRIEVAL ПАРАМЕТРЫ (RETRIEVAL SETTINGS)
+# ============================================================================
+# BM25 поиск
+BM25_TOP_K = 10  # Количество документов для BM25
 
-# ============ БАЗА ДАННЫХ ============
-DATABASE_CONFIG = {
-    "host": os.getenv("DB_HOST", "localhost"),
-    "port": int(os.getenv("DB_PORT", "5432")),
-    "user": os.getenv("DB_USER", "numerology"),
-    "password": os.getenv("DB_PASSWORD", "numerology_pass"),
-    "database": os.getenv("DB_NAME", "numerology_db"),
-    "pool_size": 20,
-    "max_overflow": 40,
-}
+# Векторный поиск
+FAISS_TOP_K = 5  # Количество документов для FAISS
+VECTOR_SIMILARITY_THRESHOLD = 0.5  # Минимальный cosine similarity
 
-# ============ API ============
-API_CONFIG = {
-    "host": "0.0.0.0",
-    "port": 8000,
-    "reload": True,
-    "workers": 4,
-}
+# Гибридный поиск
+HYBRID_TOP_K = 5  # Финальные результаты после reranking
+RERANK_THRESHOLD = 0.4
 
-# ============ TELEGRAM ============
-TELEGRAM_CONFIG = {
-    "token": os.getenv("TELEGRAM_BOT_TOKEN", "YOUR_TOKEN_HERE"),
-    "max_message_length": 4096,  # Максимум символов в Telegram
-    "timeout": 30,
-}
+# ============================================================================
+# CHUNKING ПАРАМЕТРЫ (CHUNKING SETTINGS)
+# ============================================================================
+CHUNK_SIZE = 512  # Размер чанка в токенах
+CHUNK_OVERLAP = 100  # Перекрытие между чанками
 
-# ============ FRONTEND ============
-FRONTEND_CONFIG = {
-    "host": "0.0.0.0",
-    "port": 3000,
-    "api_base_url": "http://localhost:8000",
-}
+# ============================================================================
+# OCR ПАРАМЕТРЫ (OCR SETTINGS)
+# ============================================================================
+OCR_LANG = "rus"  # Русский язык для OCR (Tesseract)
+OCR_DPI = 150  # DPI для преобразования PDF в изображение
+OCR_THREADS = 4  # Количество потоков OCR
 
-# ============ ЛОГИРОВАНИЕ ============
-LOGGING_CONFIG = {
-    "level": "INFO",
-    "log_file": LOGS_DIR / "app.log",
-    "format": "%\(asctime\)s - %\(name\)s - %\(levelname\)s - %\(message\)s",
-}
+# ============================================================================
+# API ПАРАМЕТРЫ (API SETTINGS)
+# ============================================================================
+API_HOST = "0.0.0.0"
+API_PORT = 8000
+API_DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+
+# ============================================================================
+# TELEGRAM БОТ (TELEGRAM BOT)
+# ============================================================================
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "YOUR_TOKEN_HERE")
+TELEGRAM_MAX_MESSAGE_LENGTH = 4096  # Лимит Telegram
+
+# ============================================================================
+# ЛОГИРОВАНИЕ (LOGGING)
+# ============================================================================
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+# ============================================================================
+# PROMPTS (СИСТЕМНЫЕ ПОДСКАЗКИ)
+# ============================================================================
+SYSTEM_PROMPT = """
+Ты помощник специалист по нумерологии. Ты работаешь с научной литературой по нумерологии и давай ответы на основе источников.
+
+ПРАВИЛА:
+1. Давай ответы ТОЛЬКО на основе предоставленных источников
+2. Если информация не в источниках - скажи "К сожалению, я не нашел информацию об этом в доступных источниках"
+3. Всегда цитируй источник и номер страницы
+4. Максимум 512 токенов в ответе
+5. Ответ на русском языке
+
+Источники будут предоставлены в формате:
+[ИСТОЧНИК 1]
+Название: {название}
+Страница: {номер}
+Текст: {текст}
+[/ИСТОЧНИК 1]"""
+
+RETRIEVAL_PROMPT_TEMPLATE = """
+На основе следующих источников ответь на вопрос:
+
+ВОПРОС: {query}
+
+ИСТОЧНИКИ:
+{context}
+
+Ответь на русском языке. Обязательно указывай источники и номера страниц.
+"""
+
+# ============================================================================
+# ПАРАМЕТРЫ ПРОИЗВОДИТЕЛЬНОСТИ (PERFORMANCE)
+# ============================================================================
+CACHE_EMBEDDINGS = True  # Кэшировать embeddings
+BATCH_PROCESSING = True  # Батч-обработка
+MAX_WORKERS = 4  # Максимум рабочих потоков
