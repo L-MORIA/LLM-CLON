@@ -1,33 +1,26 @@
-# Configuration settings for the Numerology RAG System
+# Numerology RAG System Configuration
 
-import os
+# Model settings
+models:
+  - name: model1
+    version: "1.0"
+  - name: model2
+    version: "1.1"
 
-class Config:
-    """Configuration for the Numerology RAG system."""
+# File paths
+paths:
+  data_path: "/path/to/data"
+  results_path: "/path/to/results"
 
-    # Device configuration
-    @staticmethod
-    def get_device():
-        # Detecting if GPU is available
-        if os.environ.get('USE_GPU', 'false').lower() == 'true':
-            return 'GPU'
-        return 'CPU'
+# API keys
+api_keys:
+  service1: "YOUR_API_KEY_1"
+  service2: "YOUR_API_KEY_2"
 
-    # Database settings
-    DB_URI = os.environ.get('DB_URI', 'sqlite:///numerology.db')  # Default to SQLite
-    DB_TRACK_MODIFICATIONS = False
-
-    # Model parameters
-    MODEL_NAME = os.environ.get('MODEL_NAME', 'default_model')
-    MODEL_VERSION = os.environ.get('MODEL_VERSION', '1.0')
-    MAX_INPUT_LEN = int(os.environ.get('MAX_INPUT_LEN', 512))  # Default max input length
-    BATCH_SIZE = int(os.environ.get('BATCH_SIZE', 16))  # Default batch size
-
-    # API settings
-    API_URL = os.environ.get('API_URL', 'http://localhost:5000')  # Default API URL
-    API_TIMEOUT = int(os.environ.get('API_TIMEOUT', 30))  # Default timeout in seconds
-
-    @staticmethod
-    def init_app(app):
-        """Initialize the application with the given configuration settings."""
-        pass
+# Database configuration
+database:
+  host: "localhost"
+  port: 5432
+  username: "db_user"
+  password: "db_password"
+  db_name: "numerology_db"
